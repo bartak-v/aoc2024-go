@@ -12,11 +12,11 @@ import (
 )
 
 func main() {
-	var a []string           // Left side of file.txt
-	var b []string           // Right side of file.txt
+	var a []string           // Left side of input
+	var b []string           // Right side of input
 	var total_length float64 // Total length
 
-	file, err := os.Open("file.txt")
+	file, err := os.Open("input")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,7 +24,7 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		line := scanner.Text()        // Get line of file.txt
+		line := scanner.Text()        // Get line of input
 		words := strings.Fields(line) // Split file inbetween
 		a = append(a, words[0])       // Append left side of split file to left side arr
 		b = append(b, words[1])       // Append right side of split file to right side arr
