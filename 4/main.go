@@ -55,9 +55,14 @@ func main() {
 	// Go through the rows on Xpositions in all directions
 	for _, position := range map_of_xs {
 		// Horizontal direction
-		total_xmas_counter += sum_up_horizontal_positive_direction(position, character_matrix)
-		total_xmas_counter += sum_up_horizontal_negative_direction(position, character_matrix)
-
+		total_xmas_counter += sum_horizontal_positive_direction(position, character_matrix)
+		total_xmas_counter += sum_horizontal_negative_direction(position, character_matrix)
+		total_xmas_counter += sum_vertical_negative_direction(position, character_matrix)
+		total_xmas_counter += sum_vertical_positive_direction(position, character_matrix)
+		total_xmas_counter += sum_right_diagonal_positive_direction(position, character_matrix)
+		//total_xmas_counter += sum_right_diagonal_negative_direction(position, character_matrix)
+		//total_xmas_counter += sum_left_diagonal_positive_direction(position, character_matrix)
+		//total_xmas_counter += sum_left_diagonal_negative_direction(position, character_matrix)
 	}
 	fmt.Print(total_xmas_counter)
 }
@@ -80,7 +85,7 @@ func determine_found_characters(position string, m_truth_val *bool, a_truth_val 
 	return false
 }
 
-func sum_up_horizontal_positive_direction(position XPosition, matrix [][]string) int {
+func sum_horizontal_positive_direction(position XPosition, matrix [][]string) int {
 	found_m, found_a, found_s := false, false, false
 	for row_y := position.Y + 1; row_y < len(matrix); row_y++ {
 		if determine_found_characters(matrix[position.X][row_y], &found_m, &found_a, &found_s) {
@@ -90,7 +95,7 @@ func sum_up_horizontal_positive_direction(position XPosition, matrix [][]string)
 	return 0
 }
 
-func sum_up_horizontal_negative_direction(position XPosition, matrix [][]string) int {
+func sum_horizontal_negative_direction(position XPosition, matrix [][]string) int {
 	found_m, found_a, found_s := false, false, false
 	for row_y := position.Y - 1; row_y > 0; row_y-- {
 		if determine_found_characters(matrix[position.X][row_y], &found_m, &found_a, &found_s) {
@@ -100,11 +105,39 @@ func sum_up_horizontal_negative_direction(position XPosition, matrix [][]string)
 	return 0
 }
 
-func sum_up_vertical_positive_direction(position XPosition, matrix [][]string) int {
+func sum_vertical_positive_direction(position XPosition, matrix [][]string) int {
 	found_m, found_a, found_s := false, false, false
-	for row_y := position.Y - 1; row_y > 0; row_y-- {
-		if determine_found_characters(matrix[position.X][row_y], &found_m, &found_a, &found_s) {
+	for column_x := position.X + 1; column_x < len(matrix[0]); column_x++ {
+		if determine_found_characters(matrix[column_x][position.Y], &found_m, &found_a, &found_s) {
 			return 1
+		}
+	}
+	return 0
+}
+
+func sum_vertical_negative_direction(position XPosition, matrix [][]string) int {
+	found_m, found_a, found_s := false, false, false
+	for column_x := position.X - 1; column_x > 0; column_x-- {
+		if determine_found_characters(matrix[column_x][position.Y], &found_m, &found_a, &found_s) {
+			return 1
+		}
+	}
+	return 0
+}
+
+/*
+1001
+100X
+10X1
+1X01
+*/
+func sum_right_diagonal_positive_direction(position XPosition, matrix [][]string) int {
+	found_m, found_a, found_s := false, false, false
+	for row_x := position.X; row_x < len(matrix); row_x++ {
+		for column_y := position.Y + 1; column_y < len(matrix[0]); column_y++ {
+			if determine_found_characters(matrix[row_x][column_y], &found_m, &found_a, &found_s) {
+				return 1
+			}
 		}
 	}
 	return 0
