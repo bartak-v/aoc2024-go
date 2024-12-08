@@ -22,8 +22,8 @@ func main() {
 	}
 	defer file.Close()
 
-	// Create a 2D array to hold the result
-	var result [][]string
+	// Create a 2D array to hold the character_matrix
+	var character_matrix [][]string
 
 	// Read the file line by line
 	scanner := bufio.NewScanner(file)
@@ -33,7 +33,7 @@ func main() {
 		for _, char := range line {
 			chars = append(chars, string(char)) // Convert each rune to a string
 		}
-		result = append(result, chars)
+		character_matrix = append(character_matrix, chars)
 	}
 
 	// Check for errors in reading the file
@@ -44,7 +44,7 @@ func main() {
 
 	var map_of_xs []XPosition
 	// Create a map of positions of all Xs
-	for i, row := range result {
+	for i, row := range character_matrix {
 		for j, character := range row {
 			if character == "X" {
 				map_of_xs = append(map_of_xs, XPosition{i, j})
@@ -52,41 +52,60 @@ func main() {
 		}
 	}
 
-	fmt.Print(map_of_xs)
-
-	// Go through the rows in horizontal positive direction
-	for _, row := range result {
-		for j, character := range row {
-			if j+3 == len(row) {
-				// No more to be found in this row on both sides
-				break
-			}
-			if character == "X" {
-				// We found X, now check all directions
-				found_m := false
-				found_a := false
-				found_s := false
-				// Check that we find M,A,S in this succession in horizontal positive direction
-				for row_i := j; row_i < len(row); row_i++ {
-					if row[row_i] == "M" {
-						found_m = true
-					}
-					if row[row_i] == "A" && found_m {
-						found_a = true
-					}
-					if row[row_i] == "S" && found_m && found_a {
-						found_s = true
-					}
-					if found_m && found_a && found_s {
-						// We found Xmas
-						total_xmas_counter++
-						break
-					}
-
-				}
-			}
-		}
+	// Go through the rows on Xpositions in all directions
+	for _, position := range map_of_xs {
+		// Horizontal direction
+		total_xmas_counter += sum_up_horizontal_positive_direction(position, character_matrix)
+		total_xmas_counter += sum_up_horizontal_negative_direction(position, character_matrix)
 
 	}
 	fmt.Print(total_xmas_counter)
+}
+
+func determine_found_characters(position string, m_truth_val *bool, a_truth_val *bool, s_truth_val *bool) bool {
+	// Determine if the character found is one of M A S
+	if position == "M" {
+		*m_truth_val = true
+	}
+	if position == "A" && *m_truth_val {
+		*a_truth_val = true
+	}
+	if position == "S" && *m_truth_val && *a_truth_val {
+		*s_truth_val = true
+	}
+	if *m_truth_val && *a_truth_val && *s_truth_val {
+		// We found Xmas - return 1 to be summed up to the total
+		return true
+	}
+	return false
+}
+
+func sum_up_horizontal_positive_direction(position XPosition, matrix [][]string) int {
+	found_m, found_a, found_s := false, false, false
+	for row_y := position.Y + 1; row_y < len(matrix); row_y++ {
+		if determine_found_characters(matrix[position.X][row_y], &found_m, &found_a, &found_s) {
+			return 1
+		}
+	}
+	return 0
+}
+
+func sum_up_horizontal_negative_direction(position XPosition, matrix [][]string) int {
+	found_m, found_a, found_s := false, false, false
+	for row_y := position.Y - 1; row_y > 0; row_y-- {
+		if determine_found_characters(matrix[position.X][row_y], &found_m, &found_a, &found_s) {
+			return 1
+		}
+	}
+	return 0
+}
+
+func sum_up_vertical_positive_direction(position XPosition, matrix [][]string) int {
+	found_m, found_a, found_s := false, false, false
+	for row_y := position.Y - 1; row_y > 0; row_y-- {
+		if determine_found_characters(matrix[position.X][row_y], &found_m, &found_a, &found_s) {
+			return 1
+		}
+	}
+	return 0
 }
