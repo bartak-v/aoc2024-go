@@ -14,7 +14,7 @@ func main() {
 	ordering_rules := make(map[int][]int)
 	// Input of the update pages
 	var update_pages [][]int
-	var counter int // Total count of valid middle pages
+	var invalid_update_pages [][]int
 
 	// Open the first input file
 	file1, err := os.Open("input1")
@@ -67,14 +67,20 @@ func main() {
 					// An element has been seen before the current element, which breaks the rule.
 					// This is invalid update rule.
 					valid = false
-					break
 				}
 			}
 		}
-		// Add up the middle page of a valid update request
-		if valid {
-			counter += update[len(update)/2]
+		if !valid {
+			invalid_update_pages = append(invalid_update_pages, update)
 		}
 	}
-	fmt.Print(counter)
+
+	for _, invalid_update := range invalid_update_pages{
+		valid_update := sort_invalid_update(invalid_update, ordering_rules)
+	}
+}
+
+func sort_invalid_update(update []int, rules map[int][]int) []int{
+	 // Go through the update and for each element, if you find the next element in the ordering rules, put it immediatedly before the element.
+	 
 }
