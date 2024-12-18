@@ -3,93 +3,89 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/Knetic/govaluate"
 )
 
-type OperationInputs struct {
-	Result   int
-	Operands []int
+func evaluateExpression(operands []int, operators []rune) int {
+	result := operands[0]
+	for i := 0; i < len(operators); i++ {
+		switch operators[i] {
+		case '+':
+			result += operands[i+1]
+		case '*':
+			result *= operands[i+1]
+		}
+	}
+	return result
 }
 
-// Recursive function to build and evaluate all combinations of operators
-// Recursive function to build and evaluate all combinations of operators
-func evaluateWithGovaluate(operands []int, target int, index int, expression string) bool {
-	// Base case: If we've processed all operands, evaluate the expression
-	if index == len(operands) {
-		eval, err := govaluate.NewEvaluableExpression(expression)
-		if err != nil {
-			log.Fatalf("Error creating expression: %v", err)
-		}
+func generateOperatorCombinations(length int) [][]rune {
+	operators := []rune{'+', '*'}
+	var combinations [][]rune
 
-		// Evaluate the expression
-		result, err := eval.Evaluate(nil)
-		if err != nil {
-			log.Fatalf("Error evaluating expression: %v", err)
+	for i := 0; i < pow(len(operators), length); i++ {
+		combo := make([]rune, length)
+		n := i
+		for j := 0; j < length; j++ {
+			combo[j] = operators[n%len(operators)]
+			n /= len(operators)
 		}
+		combinations = append(combinations, combo)
+	}
+	return combinations
+}
 
-		// Check if the result matches the target
-		if int(result.(float64)) == target {
-			fmt.Printf("Expression that matches: %s = %d\n", expression, target)
+func pow(base, exp int) int {
+	result := 1
+	for i := 0; i < exp; i++ {
+		result *= base
+	}
+	return result
+}
+
+func solve(target int, operands []int) bool {
+	// Number of spaces between operands where operators can be inserted
+	operatorSpaces := len(operands) - 1
+
+	// Generate all possible operator combinations
+	operatorCombos := generateOperatorCombinations(operatorSpaces)
+
+	for _, operators := range operatorCombos {
+		if evaluateExpression(operands, operators) == target {
 			return true
 		}
-		return false
 	}
-
-	// Recursive case: Add "+" or "*" between the current expression and the next operand
-	nextOperand := operands[index]
-	if evaluateWithGovaluate(operands, target, index+1, expression+" + "+fmt.Sprintf("%d", nextOperand)) {
-		return true
-	}
-	if evaluateWithGovaluate(operands, target, index+1, expression+" * "+fmt.Sprintf("%d", nextOperand)) {
-		return true
-	}
-
-	// No match found
 	return false
 }
 
 func main() {
-	var operationCandidates []OperationInputs
-	totalSum := 0 // Total sum of legit operations
-	// Open the file
 	file, err := os.Open("input")
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
 	}
 	defer file.Close()
-	// Scan and parse the whole file
+
+	totalCalibration := 0
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		line := scanner.Text()            // Get line of input
-		words := strings.Split(line, ":") // Split line inbetween
-
-		var operands []int                           // Intermediate slice of operands
-		operands_str := strings.Split(words[1], " ") // Slice of string representation of operands
-		for _, v := range operands_str {
-			// Convert string operands to ints
-			operand_int, _ := strconv.Atoi(v)
-			operands = append(operands, operand_int)
+		line := scanner.Text()
+		parts := strings.Split(line, ":")
+		target, _ := strconv.Atoi(parts[0])
+		
+		operandStrings := strings.Fields(parts[1])
+		operands := make([]int, len(operandStrings))
+		for i, s := range operandStrings {
+			operands[i], _ = strconv.Atoi(s)
 		}
-		op := OperationInputs{}
-		op.Result, _ = strconv.Atoi(words[0])
-		op.Operands = operands
-		operationCandidates = append(operationCandidates, op)
-	}
 
-	// Cycle through the operationCandidates and determine the legit candidates
-	for _, v := range operationCandidates {
-		// Start recursion with the first operand
-		if !evaluateWithGovaluate(v.Operands, v.Result, 1, fmt.Sprintf("%d", v.Operands[0])) {
-			fmt.Println("No combination of + or * gives the target.")
-		} else {
-			totalSum += v.Result
+		if solve(target, operands) {
+			totalCalibration += target
+			fmt.Printf("Solved: %d with %v\n", target, operands)
 		}
 	}
-	fmt.Print(totalSum)
+
+	fmt.Println("Total Calibration Result:", totalCalibration)
 }
