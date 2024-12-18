@@ -8,6 +8,15 @@ import (
 	"strings"
 )
 
+func concatenate(a, b int) int {
+	return parseInt(fmt.Sprintf("%d%d", a, b))
+}
+
+func parseInt(s string) int {
+	n, _ := strconv.Atoi(s)
+	return n
+}
+
 func evaluateExpression(operands []int, operators []rune) int {
 	result := operands[0]
 	for i := 0; i < len(operators); i++ {
@@ -16,13 +25,15 @@ func evaluateExpression(operands []int, operators []rune) int {
 			result += operands[i+1]
 		case '*':
 			result *= operands[i+1]
+		case '|':
+			result = concatenate(result, operands[i+1])
 		}
 	}
 	return result
 }
 
 func generateOperatorCombinations(length int) [][]rune {
-	operators := []rune{'+', '*'}
+	operators := []rune{'+', '*', '|'}
 	var combinations [][]rune
 
 	for i := 0; i < pow(len(operators), length); i++ {
